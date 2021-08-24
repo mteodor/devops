@@ -19,10 +19,10 @@ ingress:
   annotations: {}
   labels: {}
   # Uncomment this block for TLS support in public ingress
-  # hostname: ""
-  # tls:
-  #   hostname: ""
-  #   secret: "mainflux-server"
+  hostname: "c64.mainflux.io"
+  tls:
+    hostname: "c64.mainflux.io"
+    secret: "mainflux-server"
 
 nginxInternal:
   mtls:
@@ -103,7 +103,8 @@ users:
   adminPassword: "12345678"
 
 things:
-  image: {}
+  image: 
+    tag: "oauth2"
   dbPort: 5432
   httpPort: 8182
   authGrpcPort: 8183
@@ -146,7 +147,8 @@ certs:
   signVaultRole: "agent"
 
 ui:
-  image: {}
+  image: 
+    tag: "latest"
   port: 3000
   proxyAuth: false
   prefix: "ui"
@@ -416,3 +418,12 @@ postgresqlketo:
     helm.sh/hook: "pre-install, pre-upgrade"
     helm.sh/hook-delete-policy: "before-hook-creation"
 
+oidc:
+  host: c64-dev.mainflux.io
+  discovery: https://c64-dev.mainflux.io/auth/realms/master/.well-known/openid-configuration
+  client_id: "ashvin-dev"
+  client_secret: "3275634c-49f7-4ee9-8ac0-ebf9b765140d"
+  redirect_after_logout_uri: 
+     
+  
+    
