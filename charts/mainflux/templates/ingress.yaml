@@ -4,8 +4,13 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-{{- if .Values.ingress.annotations }}
   annotations:
+    nginx.ingress.kubernetes.io/auth-url: "https://c64.mainflux.io/oauth2/auth"
+    nginx.ingress.kubernetes.io/auth-signin: "https://c64.mainflux.io/oauth2/start?rd=$escaped_request_uri"
+    nginx.ingress.kubernetes.io/proxy-buffering: "on"
+    nginx.ingress.kubernetes.io/auth-response-headers: 'X-Auth-Request-Access-Token, Authorization'
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+{{- if .Values.ingress.annotations }}
 {{ toYaml .Values.ingress.annotations | indent 4 }}
 {{- end }}
 {{- if .Values.ingress.labels }}
@@ -18,24 +23,27 @@ spec:
     - host: "{{ .Values.ingress.hostname }}"
       http:
         paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ .Release.Name }}-ui
-                port:
-                  number: {{ .Values.ui.port }}
-          - path: /version
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ .Release.Name }}-things
-                port:
-                  number: {{ .Values.things.httpPort }}
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ .Release.Name }}-ui
+              port:
+                number: {{ .Values.ui.port }}
+        - path: /version
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ .Release.Name }}-things
+              port:
+                number: {{ .Values.things.httpPort }}
 {{- if .Values.ingress.tls }}
   tls:
     - hosts:
         - {{ .Values.ingress.tls.hostname }}
+        {{- if .Values.oidc.host }}
+        - {{ .Values.oidc.host }}
+        {{- end }}
       secretName: {{ .Values.ingress.tls.secret }}
 {{- end }}
 ---
@@ -44,6 +52,10 @@ kind: Ingress
 metadata:
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/auth-url: "https://c64.mainflux.io/oauth2/auth"
+    nginx.ingress.kubernetes.io/auth-signin: "https://c64.mainflux.io/oauth2/start?rd=$escaped_request_uri"
+    nginx.ingress.kubernetes.io/proxy-buffering: "on"
+    nginx.ingress.kubernetes.io/auth-response-headers: 'X-Auth-Request-Access-Token, Authorization'
 {{- if .Values.ingress.annotations }}
 {{ toYaml .Values.ingress.annotations | indent 4 }}
 {{- end }}
@@ -57,134 +69,141 @@ spec:
     - host: "{{ .Values.ingress.hostname }}"
       http:
         paths:
-          - path: /(users?.*)
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ .Release.Name }}-users
+        - path: /(users/profile)
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ .Release.Name }}-nginx-profile
+              port: 
+                number: 8080
+        - path: /(users?.*)
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ .Release.Name }}-users
+              port: 
+                number: {{ .Values.users.httpPort }}
+        - path: /(password?.*)
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ .Release.Name }}-users
+              port:
+                number: {{ .Values.users.httpPort }}
+        - path: /(groups?.*)
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ .Release.Name }}-users
+              port: 
+                number: {{ .Values.users.httpPort }}
+        - path: /(tokens)
+          pathType: Prefix
+          backend:
+            service:
+                name: {{ .Release.Name }}-nginx-tokens
                 port: 
-                  number: {{ .Values.users.httpPort }}
-          - path: /(password?.*)
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ .Release.Name }}-users
-                port:
-                  number: {{ .Values.users.httpPort }}
-          - path: /(groups?.*)
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ .Release.Name }}-users
-                port: 
-                  number: {{ .Values.users.httpPort }}
-          - path: /(tokens)
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ .Release.Name }}-users
-                port: 
-                  number: {{ .Values.users.httpPort }}
-          - path: /(things?.*)
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ .Release.Name }}-things
-                port: 
-                  number: {{ .Values.things.httpPort }}
-          - path: /(channels?.*)
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ .Release.Name }}-things
-                port: 
-                  number: {{ .Values.things.httpPort }}
-          - path: /(connect?.*)
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ .Release.Name }}-things
-                port: 
-                  number: {{ .Values.things.httpPort }}
-          - path: /version/users/?(.*)
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ .Release.Name }}-users
-                port: 
-                  number: {{ .Values.users.httpPort }}
-          - path: /version/things/?(.*)
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ .Release.Name }}-things
-                port: 
-                  number: {{ .Values.things.httpPort }}
-          - path: /version/http/?(.*)
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ .Release.Name }}-adapter-http
-                port: 
-                  number: {{ default .Values.adapter_http.httpPort }}
+                  number: 8080
+        - path: /(things?.*)
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ .Release.Name }}-things
+              port: 
+                number: {{ .Values.things.httpPort }}
+        - path: /(channels?.*)
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ .Release.Name }}-things
+              port: 
+                number: {{ .Values.things.httpPort }}
+        - path: /(connect?.*)
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ .Release.Name }}-things
+              port: 
+                number: {{ .Values.things.httpPort }}
+        - path: /version/users/?(.*)
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ .Release.Name }}-users
+              port: 
+                number: {{ .Values.users.httpPort }}
+        - path: /version/things/?(.*)
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ .Release.Name }}-things
+              port: 
+                number: {{ .Values.things.httpPort }}
+        - path: /version/http/?(.*)
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ .Release.Name }}-adapter-http
+              port: 
+                number: {{ default .Values.adapter_http.httpPort }}
 {{- if .Values.notifier_smtp.enabled }}
-          - path: /smtp-notifier/?(.*)
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ .Release.Name }}-notifier-smtp
-                port: 
-                  number: {{ .Values.notifier_smtp.httpPort }}
+        - path: /smtp-notifier/?(.*)
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ .Release.Name }}-notifier-smtp
+              port: 
+                number: {{ .Values.notifier_smtp.httpPort }}
 {{- end }}
 {{- if .Values.bootstrap.enabled }}
-          - path: /bootstrap/?(.*)
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ .Release.Name }}-bootstrap
-                port: 
-                  number: {{ .Values.bootstrap.httpPort }}
-          - path: /bs/?(.*)
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ .Release.Name }}-bootstrap
-                port: 
-                  number: {{ .Values.bootstrap.httpPort }}
+        - path: /bootstrap/?(.*)
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ .Release.Name }}-bootstrap
+              port: 
+                number: {{ .Values.bootstrap.httpPort }}
+        - path: /bs/?(.*)
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ .Release.Name }}-bootstrap
+              port: 
+                number: {{ .Values.bootstrap.httpPort }}
 {{- end }}
 {{- if .Values.influxdb.enabled }}
-          - path: /reader/?(.*)
-            pathType: Prefix
-            backend:
-              service:
-                name:  {{ .Release.Name }}-influxdb-reader
-                port: 
-                  number: {{ .Values.influxdb.reader.httpPort }}
+        - path: /reader/?(.*)
+          pathType: Prefix
+          backend:
+            service:
+              name:  {{ .Release.Name }}-influxdb-reader
+              port: 
+                number: {{ .Values.influxdb.reader.httpPort }}
 {{- end }}
 {{- if .Values.twins.enabled }}
-          - path: /(twins?.*)
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ .Release.Name }}-twins
-                port: 
-                  number: {{ .Values.twins.httpPort }}
-          - path: /(states?.*)
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ .Release.Name }}-twins
-                port: 
-                  number: {{ .Values.twins.httpPort }}
+        - path: /(twins?.*)
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ .Release.Name }}-twins
+              port: 
+                number: {{ .Values.twins.httpPort }}
+        - path: /(states?.*)
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ .Release.Name }}-twins
+              port: 
+                number: {{ .Values.twins.httpPort }}
 {{- end }}
 {{- if .Values.adapter_opcua.enabled }}
-          - path: /(browse?.*)
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ .Release.Name }}-adapter-opcua
-                port: 
-                  number: {{ default .Values.adapter_opcua.httpPort }}
+        - path: /(browse?.*)
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ .Release.Name }}-adapter-opcua
+              port: 
+                number: {{ default .Values.adapter_opcua.httpPort }}
 {{- end }}
 {{- if .Values.ingress.tls }}
   tls:
@@ -192,6 +211,31 @@ spec:
         - {{ .Values.ingress.tls.hostname }}
       secretName: {{ .Values.ingress.tls.secret }}
 {{- end }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-oauth2-proxy
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-buffering: "on"
+    nginx.ingress.kubernetes.io/proxy-buffers-number: "4"
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "256k"
+spec:
+  rules:
+  - host: {{ .Values.ingress.tls.hostname }}
+    http:
+      paths:
+      - path: /oauth2
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Release.Name }}-oauth2-proxy
+            port: 
+              number: 4180
+  tls:
+  - hosts:
+    - {{ .Values.ingress.tls.hostname }}
+    secretName: {{ .Values.ingress.tls.secret }}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -230,7 +274,7 @@ spec:
             backend:
               service:
                 name: {{ .Release.Name }}-nginx-internal
-                port:
+                port: 
                   number: 80
 {{- else }}
           - path: /http/?(.*)
@@ -262,7 +306,7 @@ data:
   8883: "{{ .Release.Namespace }}/{{ .Release.Name }}-nginx-internal:8883"
 metadata:
   name: tcp-services
-  namespace: ingress-nginx
+  namespace: {{ .Release.Namespace }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -270,4 +314,4 @@ data:
   5683: "{{ .Release.Namespace }}/{{ .Release.Name }}-adapter-coap:5683"
 metadata:
   name: udp-services
-  namespace: ingress-nginx
+  namespace: {{ .Release.Namespace }}
