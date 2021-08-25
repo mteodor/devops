@@ -1,3 +1,4 @@
+{{- if .Values.oidc.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -27,22 +28,22 @@ spec:
          - --pass-authorization-header=true
         env:
          - name: OAUTH2_PROXY_OIDC_ISSUER_URL
-           value: https://c64-auth.mainflux.io/auth/realms/master
+           value: https://{{ .Values.oidc.host }}/auth/realms/master
          - name: OAUTH2_PROXY_CLIENT_ID
-           value: c64.mainflux.io
+           value: {{ .Values.oidc.client_id }}
          - name: OAUTH2_PROXY_CLIENT_SECRET
-           value: df20c3df-7e77-4972-b2de-25d85e62ac3c
+           value: {{ .Values.oidc.client_secret }}
          # docker run -ti --rm python:3-alpine python -c 'import secrets,base64; print(base64.b64encode(base64.b64encode(secrets.token_bytes(16))));'
          - name: OAUTH2_PROXY_COOKIE_SECRET
-           value: 'KzE2bSt4VDRiendJUVFZRDlEcFhaUT09'
+           value: {{ .Values.oidc.cookie_secret }}
          - name: OUATH2_PROXY_LOGIN_URL
-           value: https://c64-auth.mainflux.io/auth/realms/master/protocol/openid-connect/auth
+           value: https://{{ .Values.oidc.host }}/auth/realms/master/protocol/openid-connect/auth
          - name: OAUTH2_PROXY_REDEEM_URL
-           value: https://c64-auth.mainflux.io/auth/realms/master/protocol/openid-connect/token
+           value: https://{{ .Values.oidc.host }}/auth/realms/master/protocol/openid-connect/token
          - name: OAUTH2_PROXY_PROFILE_URL
-           value: https://c64-auth.mainflux.io/auth/realms/master/protocol/openid-connect/userinfo
+           value: https://{{ .Values.oidc.host }}/auth/realms/master/protocol/openid-connect/userinfo
          - name: OAUTH2_PROXY_VALIDATE_URL
-           value: https://c64-auth.mainflux.io/auth/realms/master/protocol/openid-connect/userinfo
+           value: https://{{ .Values.oidc.host }}/auth/realms/master/protocol/openid-connect/userinfo
         image: quay.io/oauth2-proxy/oauth2-proxy:latest
         imagePullPolicy: Always
         name: {{ .Release.Name }}-oauth2-proxy
@@ -66,3 +67,4 @@ spec:
     targetPort: 4180
   selector:
     k8s-app: {{ .Release.Name }}-oauth2-proxy
+{{- end }}

@@ -1,3 +1,4 @@
+{{- if .Values.oidc.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -78,16 +79,18 @@ data:
         add_header Access-Control-Allow-Headers '*';
 
         server_name {{ .Values.ingress.hostname }};
-
         
-        # Proxy pass to users service
+        location  = /users/profile {
+          return return 200 '$http_x_auth_request_access_token';
+        }
+        
         location ~ ^/(tokens) {
           default_type application/json;
           return 200 '{"token":"$http_authorization;"}';
         }
       }
 
-      log_format access_log_format 'HTTP/WS '
+      log_format access_log_format 'HTTP '
         '$remote_addr: '
         '"$request" $status; '
         'request time=$request_time upstream connect time=$upstream_connect_time upstream response time=$upstream_response_time';
@@ -112,3 +115,4 @@ spec:
     - port: 8080
       protocol: TCP
       name: http
+{{-end }}
