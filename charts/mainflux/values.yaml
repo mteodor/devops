@@ -419,10 +419,12 @@ postgresqlketo:
     helm.sh/hook-delete-policy: "before-hook-creation"
 
 oidc:
-  host: c64-dev.mainflux.io
-  discovery: https://c64-dev.mainflux.io/auth/realms/master/.well-known/openid-configuration
+  enabled: true
+  host: c64-auth.mainflux.io
+  discovery: https://c64-auth.mainflux.io/auth/realms/master/.well-known/openid-configuration
   client_id: "ashvin-dev"
   client_secret: "3275634c-49f7-4ee9-8ac0-ebf9b765140d"
+  cookie_secret: "KzE2bSt4VDRiendJUVFZRDlEcFhaUT09"
   redirect_after_logout_uri: 
      
   

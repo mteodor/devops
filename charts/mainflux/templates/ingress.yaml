@@ -53,10 +53,12 @@ kind: Ingress
 metadata:
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /$1
-    nginx.ingress.kubernetes.io/auth-url: "https://c64.mainflux.io/oauth2/auth"
-    nginx.ingress.kubernetes.io/auth-signin: "https://c64.mainflux.io/oauth2/start?rd=$escaped_request_uri"
+{{- if .Values.oidc.enabled }}
+    nginx.ingress.kubernetes.io/auth-url: "{{ .Values.ingress.hostname }}/oauth2/auth"
+    nginx.ingress.kubernetes.io/auth-signin: "{{ .Values.ingress.hostname }}/oauth2/start?rd=$escaped_request_uri"
     nginx.ingress.kubernetes.io/proxy-buffering: "on"
     nginx.ingress.kubernetes.io/auth-response-headers: 'X-Auth-Request-Access-Token, Authorization'
+{{- end }}
 {{- if .Values.ingress.annotations }}
 {{ toYaml .Values.ingress.annotations | indent 4 }}
 {{- end }}
@@ -99,6 +101,7 @@ spec:
                 name: {{ .Release.Name }}-things
                 port:
                   number: {{ .Values.things.httpPort }}
+{{- if .Values.oidc.enabeld -}}
           - path: /(tokens)
             pathType: Prefix
             backend:
@@ -106,6 +109,15 @@ spec:
                   name: {{ .Release.Name }}-nginx-tokens
                   port: 
                     number: 8080
+{{- else }}
+          - path: /(tokens)
+            pathType: Prefix
+            backend:
+              service:
+                  name: {{ .Release.Name }}-users
+                  port:
+                    number: {{ .Values.users.httpPort }}
+{{- end }}
 {{- if .Values.certs.enabled -}} 
           - path: /(certs.*|serials.*)
             pathType: Prefix
@@ -174,6 +186,7 @@ spec:
       secretName: {{ .Values.ingress.tls.secret }}
 {{- end }}
 ---
+{{- if .Values.oidc.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -198,6 +211,7 @@ spec:
   - hosts:
     - {{ .Values.ingress.tls.hostname }}
     secretName: {{ .Values.ingress.tls.secret }}
+{{- end -}}
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
