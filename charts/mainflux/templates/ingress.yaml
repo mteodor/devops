@@ -5,11 +5,15 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
-    nginx.ingress.kubernetes.io/auth-url: "https://c64.mainflux.io/oauth2/auth"
-    nginx.ingress.kubernetes.io/auth-signin: "https://c64.mainflux.io/oauth2/start?rd=$escaped_request_uri"
+{{- if .Values.oidc.enabled }}
+    nginx.ingress.kubernetes.io/auth-url: "https://{{ .Values.ingress.hostname }}/oauth2/auth"
+    nginx.ingress.kubernetes.io/auth-signin: "https://{{ .Values.ingress.hostname }}/oauth2/start?rd=$escaped_request_uri"
     nginx.ingress.kubernetes.io/proxy-buffering: "on"
     nginx.ingress.kubernetes.io/auth-response-headers: 'X-Auth-Request-Access-Token, Authorization'
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+{{- end }}
+{{- if ne .Values.ingress.tls.secret "" }}
+    cert-manager.io/cluster-issuer: {{ .Release.Name }}-letsencrypt
+{{- end }}
 {{- if .Values.ingress.annotations }}
 {{ toYaml .Values.ingress.annotations | indent 4 }}
 {{- end }}
@@ -41,9 +45,6 @@ spec:
   tls:
     - hosts:
         - {{ .Values.ingress.tls.hostname }}
-        {{- if .Values.oidc.host }}
-        - {{ .Values.oidc.host }}
-        {{- end }}
       secretName: {{ .Values.ingress.tls.secret }}
 {{- end }}
 ---
@@ -53,8 +54,8 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /$1
 {{- if .Values.oidc.enabled }}
-    nginx.ingress.kubernetes.io/auth-url: "{{ .Values.ingress.hostname }}/oauth2/auth"
-    nginx.ingress.kubernetes.io/auth-signin: "{{ .Values.ingress.hostname }}/oauth2/start?rd=$escaped_request_uri"
+    nginx.ingress.kubernetes.io/auth-url: "https://{{ .Values.ingress.hostname }}/oauth2/auth"
+    nginx.ingress.kubernetes.io/auth-signin: "https://{{ .Values.ingress.hostname }}/oauth2/start?rd=$escaped_request_uri"
     nginx.ingress.kubernetes.io/proxy-buffering: "on"
     nginx.ingress.kubernetes.io/auth-response-headers: 'X-Auth-Request-Access-Token, Authorization'
 {{- end }}
@@ -71,7 +72,7 @@ spec:
     - host: "{{ .Values.ingress.hostname }}"
       http:
         paths:
-        {{- if .Values.oidc.enabeld -}}
+        {{- if .Values.oidc.enabled }}
         - path: /(users/profile)
           pathType: Prefix
           backend:
@@ -101,7 +102,7 @@ spec:
               name: {{ .Release.Name }}-users
               port: 
                 number: {{ .Values.users.httpPort }}
-        {{- if .Values.oidc.enabeld -}}
+        {{- if .Values.oidc.enabled }}
         - path: /(tokens)
           pathType: Prefix
           backend:
@@ -226,33 +227,6 @@ spec:
       secretName: {{ .Values.ingress.tls.secret }}
 {{- end }}
 ---
-{{- if .Values.oidc.enabled }}
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: {{ .Release.Name }}-oauth2-proxy
-  annotations:
-    nginx.ingress.kubernetes.io/proxy-buffering: "on"
-    nginx.ingress.kubernetes.io/proxy-buffers-number: "4"
-    nginx.ingress.kubernetes.io/proxy-buffer-size: "256k"
-spec:
-  rules:
-  - host: {{ .Values.ingress.tls.hostname }}
-    http:
-      paths:
-      - path: /oauth2
-        pathType: Prefix
-        backend:
-          service:
-            name: {{ .Release.Name }}-oauth2-proxy
-            port: 
-              number: 4180
-  tls:
-  - hosts:
-    - {{ .Values.ingress.tls.hostname }}
-    secretName: {{ .Values.ingress.tls.secret }}
-{{- end -}}
----
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -331,3 +305,32 @@ data:
 metadata:
   name: udp-services
   namespace: {{ .Release.Namespace }}
+---
+{{- if .Values.oidc.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-oauth2-proxy
+  annotations:
+    nginx.ingress.kubernetes.io/auth-response-headers: 'X-Auth-Request-Access-Token, Authorization'
+    nginx.ingress.kubernetes.io/proxy-buffering: "on"
+    nginx.ingress.kubernetes.io/proxy-buffers-number: "4"
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "256k"
+spec:
+  rules:
+  - host: {{ .Values.ingress.tls.hostname }}
+    http:
+      paths:
+      - path: /oauth2
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Release.Name }}-oauth2-proxy
+            port:
+              number: 4180
+  tls:
+  - hosts:
+    - {{ .Values.ingress.tls.hostname }}
+    secretName: {{ .Values.ingress.tls.secret }}
+{{- end }}
+---

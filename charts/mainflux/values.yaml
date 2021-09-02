@@ -17,10 +17,10 @@ ingress:
   annotations: {}
   labels: {}
   # Uncomment this block for TLS support in public ingress
-  hostname: "c64.mainflux.io"
+  hostname: ""
   tls:
-    hostname: "c64.mainflux.io"
-    secret: "mainflux-server"
+    hostname: ""
+    secret: ""
 
 nginxInternal:
   mtls:
@@ -146,7 +146,7 @@ certs:
 
 ui:
   image: 
-    tag: "latest"
+    tag: "oauth2"
   port: 3000
 
 influxdb:
@@ -185,9 +185,10 @@ mongodb:
   adminUser:
     name: "mainflux"
     pwd: "mainflux"
-  configPath: "/subjects.toml"
+  configPath: "/config.toml"
   contentType: "application/senml+json"
   transformer: "json"
+
 
 nats:
   auth:
