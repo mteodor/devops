@@ -71,28 +71,23 @@ data:
         listen [::]:8080 default_server;
 
         
-        add_header Strict-Transport-Security "max-age=63072000; includeSubdomains";
-        add_header X-Frame-Options DENY;
-        add_header X-Content-Type-Options nosniff;
-        add_header Access-Control-Allow-Origin '*';
-        add_header Access-Control-Allow-Methods '*';
-        add_header Access-Control-Allow-Headers '*';
-
         server_name {{ .Values.ingress.hostname }};
         
         location  = /users/profile {
-          return return 200 '$http_x_auth_request_access_token';
+          proxy_pass http://{{ .Release.Name }}-oauth2-proxy:4180/oauth2/userinfo;
         }
         
         location ~ ^/(tokens) {
           default_type application/json;
-          return 200 '{"token":"$http_authorization;"}';
+          return 200 '{"token":"$http_authorization"}';
         }
       }
 
       log_format access_log_format 'HTTP '
         '$remote_addr: '
         '"$request" $status; '
+        '"authorization":$http_authorization '
+        '"user": $http_x_auth_request_access_token'
         'request time=$request_time upstream connect time=$upstream_connect_time upstream response time=$upstream_response_time';
       access_log /var/log/nginx/access.log access_log_format;
       error_log  /var/log/nginx/error.log debug;
@@ -115,4 +110,4 @@ spec:
     - port: 8080
       protocol: TCP
       name: http
-{{-end }}
+{{- end }}
