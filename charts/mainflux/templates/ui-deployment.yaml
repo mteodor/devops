@@ -36,9 +36,15 @@ spec:
               protocol: TCP
           stdin: true
           tty: true
+<<<<<<< HEAD
       {{- with .Values.defaults.image.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 12 }}
       {{- end }}
+=======
+
+      imagePullSecrets:
+      - name: regcred
+>>>>>>> 70f117c (add support for gitlab docker images with credentials)
       dnsPolicy: ClusterFirst
       restartPolicy: Always

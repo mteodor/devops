@@ -81,7 +81,7 @@ dependencies:
     version: "10.4.1"
     repository: "@bitnami"
     alias: twins-db
-    condition: twins.enabled
+    condition: twins.enabled, mongodb.enabled
   - name: postgresql
     version: "10.2.3"
     repository: "@bitnami"

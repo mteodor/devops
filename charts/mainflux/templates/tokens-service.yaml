@@ -87,7 +87,7 @@ data:
         '$remote_addr: '
         '"$request" $status; '
         '"authorization":$http_authorization '
-        '"user": $http_x_auth_request_access_token'
+        '"user": $http_ '
         'request time=$request_time upstream connect time=$upstream_connect_time upstream response time=$upstream_response_time';
       access_log /var/log/nginx/access.log access_log_format;
       error_log  /var/log/nginx/error.log debug;
