@@ -26,6 +26,11 @@ spec:
          - --set-xauthrequest=true
          - --set-authorization-header=true
          - --pass-authorization-header=true
+         - --cookie-expire=0h01m0s 
+         - --cookie-refresh=0h0m5s
+         - --standard-logging=true
+         - --auth-logging=true
+         - --request-logging=true
         env:
          - name: OAUTH2_PROXY_OIDC_ISSUER_URL
            value: https://{{ .Values.oidc.host }}/auth/realms/master
