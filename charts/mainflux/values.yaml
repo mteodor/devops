@@ -79,12 +79,14 @@ mqtt:
   adapter:
     image:
       repository: "mainflux/mqtt"
+      tag: latest
     mqttPort: 1884
     wsPort: 8081
     logLevel: "debug"
   broker:
     image:
       repository: "mainflux/vernemq"
+      tag: latest
     mqttPort: 1883
     wsPort: 8080
     logLevel: "info"
@@ -101,8 +103,7 @@ users:
   adminPassword: "12345678"
 
 things:
-  image: 
-    tag: "oauth2"
+  image: {}
   dbPort: 5432
   httpPort: 8182
   authGrpcPort: 8183
@@ -145,8 +146,7 @@ certs:
   signVaultRole: "agent"
 
 ui:
-  image: 
-    tag: "oauth2"
+  image: {}
   port: 3000
 
 influxdb:
@@ -163,13 +163,39 @@ influxdb:
   adminUser:
     name: "mainflux"
     pwd: "mainflux"
-  configPath: "/config.toml"
+  configPath: "/subjects.toml"
   contentType: "application/senml+json"
   transformer: "senml"
   backup:
     enabled: false
     cronjob:
       schedule: "0 2 * * *"
+
+influxdbjson:
+  enabled: false
+  dbPort: 8086
+  writer:
+    image: {}
+    httpPort: 8902
+  reader:
+    image: {}
+    httpPort: 8907
+  database: "mainflux"
+  authEnabled: true
+  adminUser:
+    name: "mainflux"
+    pwd: "mainflux"
+  configPath: "/subjects.toml"
+  contentType: "application/senml+json"
+  transformer: "json"
+  backup:
+    enabled: false
+    cronjob:
+      schedule: "0 2 * * *"
+
+grafana:
+  enabled: false
+  port: 3002
 
 mongodb:
   enabled: false
@@ -185,7 +211,7 @@ mongodb:
   adminUser:
     name: "mainflux"
     pwd: "mainflux"
-  configPath: "/config.toml"
+  configPath: "/subjects.toml"
   contentType: "application/senml+json"
   transformer: "json"
 
@@ -302,6 +328,14 @@ redis-lora:
     persistence:
       enabled: false
 
+redis-oauth2:
+  cluster:
+    enabled: false
+  usePassword: true
+  master:
+    persistence:
+      enabled: false
+
 jaeger-operator:
   jaeger:
     create: true
@@ -334,10 +368,10 @@ nginx_internal:
     tag: "1.19.1-alpine"
 
 oidc:
-  enabled: true
-  host: c64-auth.mainflux.io
-  discovery: https://c64-auth.mainflux.io/auth/realms/master/.well-known/openid-configuration
-  client_id: "ashvin-dev"
+  enabled: false
+  host: mainflux.io
+  realm: master
+  client_id: "mainflux.io"
   client_secret: "3275634c-49f7-4ee9-8ac0-ebf9b765140d"
   cookie_secret: "KzE2bSt4VDRiendJUVFZRDlEcFhaUT09"
   redirect_after_logout_uri: 

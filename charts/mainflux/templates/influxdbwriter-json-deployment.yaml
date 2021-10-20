@@ -1,10 +1,10 @@
 # Copyright (c) Mainflux
 # SPDX-License-Identifier: Apache-2.0
-{{- if .Values.influxdb.enabled }}
+{{- if .Values.influxdbjson.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ .Release.Name }}-influxdb-writer-config
+  name: {{ .Release.Name }}-influxdb-json-writer-config
 data:
   subjects.toml: |
     # If you want to listen on all subjects, just pass one element ["channels.>"], otherwise
@@ -15,17 +15,17 @@ data:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Release.Name }}-influxdb-writer
+  name: {{ .Release.Name }}-influxdb-json-writer
 spec:
   selector:
     matchLabels:
       app: {{ .Release.Name }}
-      component: influxdb-writer
+      component: influxdb-json-writer
   template:
     metadata:
       labels:
         app: {{ .Release.Name }}
-        component: influxdb-writer
+        component: influxdb-json-writer
     spec:
       containers:
         - env:
@@ -34,38 +34,38 @@ spec:
             - name: MF_NATS_URL
               value: nats://{{ .Release.Name }}-nats-client:{{ .Values.defaults.natsPort }}
             - name: MF_INFLUX_WRITER_PORT
-              value: "{{ .Values.influxdb.writer.httpPort }}"
+              value: "{{ .Values.influxdbjson.writer.httpPort }}"
             - name: MF_INFLUX_WRITER_BATCH_SIZE
               value: "5000"
             - name: MF_INFLUX_WRITER_BATCH_TIMEOUT
               value: "5"
             - name: MF_INFLUX_WRITER_DB
-              value: "{{ .Values.influxdb.database }}"
+              value: "{{ .Values.influxdbjson.database }}"
             - name: MF_INFLUX_WRITER_DB_USER
-              value: "{{ .Values.influxdb.adminUser.name }}"
+              value: "{{ .Values.influxdbjson.adminUser.name }}"
             - name: MF_INFLUX_WRITER_DB_PASS
-              value: "{{ .Values.influxdb.adminUser.pwd }}"
+              value: "{{ .Values.influxdbjson.adminUser.pwd }}"
             - name: MF_INFLUX_WRITER_DB_HOST
               value: {{ .Release.Name }}-influxdb
             - name: MF_INFLUX_WRITER_DB_PORT
-              value: "{{ .Values.influxdb.dbPort }}"
+              value: "{{ .Values.influxdbjson.dbPort }}"
             - name: MF_INFLUX_WRITER_CONFIG_PATH
-              value: "{{ .Values.influxdb.configPath }}"
+              value: "{{ .Values.influxdbjson.configPath }}"
             - name: MF_INFLUX_WRITER_CONTENT_TYPE
-              value: "{{ .Values.influxdb.contentType }}"
+              value: "{{ .Values.influxdbjson.contentType }}"
             - name: MF_INFLUX_WRITER_TRANSFORMER
-              value: "{{ .Values.influxdb.transformer }}"
-          image: "{{ default .Values.defaults.image.repository .Values.influxdb.writer.image.repository }}/influxdb-writer:{{ default .Values.defaults.image.tag .Values.influxdb.writer.image.tag }}"
-          imagePullPolicy: {{ default .Values.defaults.image.pullPolicy .Values.influxdb.writer.image.pullPolicy }}
-          name: {{ .Release.Name }}-influxdb-writer
+              value: "{{ .Values.influxdbjson.transformer }}"
+          image: "{{ default .Values.defaults.image.repository .Values.influxdbjson.writer.image.repository }}/influxdb-writer:{{ default .Values.defaults.image.tag .Values.influxdbjson.writer.image.tag }}"
+          imagePullPolicy: {{ default .Values.defaults.image.pullPolicy .Values.influxdbjson.writer.image.pullPolicy }}
+          name: {{ .Release.Name }}-influxdb-json-writer
           ports:
-            - containerPort: {{ .Values.influxdb.writer.httpPort }}
+            - containerPort: {{ .Values.influxdbjson.writer.httpPort }}
               protocol: TCP
           stdin: true
           tty: true
           volumeMounts:
-            - mountPath: {{ .Values.influxdb.configPath }}
-              name: influxdb-writer-config
+            - mountPath: /config/subjects.toml
+              name: influxdb-json-writer-config
               subPath: subjects.toml
       imagePullSecrets:
       - name: regcred
@@ -74,8 +74,8 @@ spec:
       volumes:
         - configMap:
             defaultMode: 256
-            name: {{ .Release.Name }}-influxdb-writer-config
+            name: {{ .Release.Name }}-influxdb-json-writer-config
             optional: false
-          name: influxdb-writer-config
+          name: influxdb-json-writer-config
 {{- end }}
 

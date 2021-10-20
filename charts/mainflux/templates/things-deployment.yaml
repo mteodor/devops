@@ -45,6 +45,8 @@ spec:
               value: {{ default .Values.defaults.logLevel .Values.things.logLevel }}
             - name: MF_AUTH_GRPC_URL
               value: {{ .Release.Name }}-envoy:{{ .Values.auth.grpcPort }}
+            - name: MF_OIDC
+              value: "{{ .Values.oidc.enabled }}"
           image: "{{ default .Values.defaults.image.repository .Values.things.image.repository }}/things:{{ default .Values.defaults.image.tag .Values.things.image.tag }}"
           imagePullPolicy: {{ default .Values.defaults.image.pullPolicy .Values.things.image.pullPolicy }}
           name: {{ .Release.Name }}-things

@@ -74,7 +74,7 @@ data:
         server_name {{ .Values.ingress.hostname }};
         
         location  = /users/profile {
-          proxy_pass http://{{ .Release.Name }}-oauth2-proxy:4180/oauth2/userinfo;
+          proxy_pass https://{{ .Values.oidc.host }}/auth/realms/{{ .Values.oidc.realm }}/protocol/openid-connect/userinfo;
         }
         
         location ~ ^/(tokens) {
