@@ -1,6 +1,5 @@
 # Copyright (c) Mainflux
 # SPDX-License-Identifier: Apache-2.0
-
 {{- if .Values.influxdb.enabled }}
 apiVersion: v1
 kind: ConfigMap
@@ -81,3 +80,4 @@ spec:
             optional: false
           name: influxdb-writer-config
 {{- end }}
+

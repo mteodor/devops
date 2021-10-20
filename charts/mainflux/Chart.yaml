@@ -73,6 +73,11 @@ dependencies:
     repository: "@bitnami"
     alias: redis-lora
     condition: adapter_lora.enabled
+  - name: redis
+    version: "12.6.2"
+    repository: "@bitnami"
+    alias: redis-oauth2
+    condition: oidc.enabled
   - name: influxdb
     version: "1.1.9"
     repository: "@bitnami"
