@@ -488,6 +488,7 @@ spec:
           secret:
             secretName: {{ .Values.nginxInternal.mtls.tls }}
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
