@@ -488,6 +488,7 @@ spec:
           secret:
             secretName: {{ .Values.nginxInternal.mtls.tls }}
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -502,7 +503,5 @@ spec:
       name: mqtt
     - port: 80
       protocol: TCP
-      name: http    
-
-
+      name: http           
 {{- end }}
