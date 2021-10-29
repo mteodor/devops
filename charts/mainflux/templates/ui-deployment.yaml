@@ -27,7 +27,7 @@ spec:
             - name: MF_UI_APP_PREFIX
               value: "{{ .Values.ui.prefix }}"
             - name : MF_PROXY_LOGOUT_URL
-              value: "{{ .Values.ui.logoutUrl }}"
+              value: "/oauth2/sign_out?rd={{ .Values.oidc.host }}/auth/realms/{{ .Values.oidc.host }}/protocol/openid-connect/logout?redirect_uri=https://{{ .Values.ingress.hostname }}"
           image: "{{ default .Values.defaults.image.repository .Values.ui.image.repository }}/ui:{{ default .Values.defaults.image.tag .Values.ui.image.tag }}"
           imagePullPolicy: {{ default .Values.defaults.image.pullPolicy .Values.ui.image.pullPolicy }}
           name: ui
@@ -36,15 +36,9 @@ spec:
               protocol: TCP
           stdin: true
           tty: true
-<<<<<<< HEAD
       {{- with .Values.defaults.image.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 12 }}
       {{- end }}
-=======
-
-      imagePullSecrets:
-      - name: regcred
->>>>>>> 70f117c (add support for gitlab docker images with credentials)
       dnsPolicy: ClusterFirst
       restartPolicy: Always
