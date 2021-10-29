@@ -189,7 +189,7 @@ data:
       #################################### Security ############################
       [security]
       # disable creation of admin user on first start of grafana
-      disable_initial_admin_creation = false
+      disable_initial_admin_creation = true
 
       # default admin user, created on startup
       admin_user = admin
@@ -210,7 +210,7 @@ data:
       disable_brute_force_login_protection = false
 
       # set to true if you host Grafana behind HTTPS. default is false.
-      cookie_secure = false
+      cookie_secure = true
 
       # set cookie SameSite attribute. defaults to `lax`. can be set to "lax", "strict", "none" and "disabled"
       cookie_samesite = lax
@@ -296,7 +296,7 @@ data:
       auto_assign_org_id = 1
 
       # Default role new users will be automatically assigned (if auto_assign_org above is set to true)
-      auto_assign_org_role = Viewer
+      auto_assign_org_role = Admin
 
       # Require email validation before sign up completes
       verify_email_enabled = false
@@ -342,14 +342,14 @@ data:
       disable_login_form = false
 
       # Set to true to disable the signout link in the side menu. useful if you use auth.proxy
-      disable_signout_menu = false
+      disable_signout_menu = true
 
       # URL to redirect the user to after sign out
       signout_redirect_url =
 
       # Set to true to attempt login with OAuth automatically, skipping the login screen.
       # This setting is ignored if multiple OAuth providers are configured.
-      oauth_auto_login = true
+      oauth_auto_login = false
 
       # OAuth state max age cookie duration in seconds. Defaults to 600 seconds.
       oauth_state_cookie_max_age = 600
@@ -463,7 +463,7 @@ data:
       #################################### Generic OAuth #######################
       [auth.generic_oauth]
       name = OAuth
-      enabled = true
+      enabled = false
       allow_sign_up = true
       client_id = {{ .Values.oidc.client_id }}
       client_secret = {{ .Values.oidc.client_secret }}
