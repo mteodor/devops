@@ -6,8 +6,8 @@ kind: Ingress
 metadata:
   annotations:
 {{- if .Values.oidc.enabled }}
-    nginx.ingress.kubernetes.io/auth-url: "https://{{ .Values.ingress.hostname }}/oauth2/auth"
-    nginx.ingress.kubernetes.io/auth-signin: "https://{{ .Values.ingress.hostname }}/oauth2/start?rd=$escaped_request_uri"
+    nginx.ingress.kubernetes.io/auth-url: "https://$host/oauth2/auth"
+    nginx.ingress.kubernetes.io/auth-signin: "https://$host/oauth2/start?rd=$escaped_request_uri"
     nginx.ingress.kubernetes.io/proxy-buffering: "on"
     nginx.ingress.kubernetes.io/auth-response-headers: 'X-Auth-Request-Access-Token, Authorization'
 {{- end }}
@@ -35,6 +35,45 @@ spec:
               name: {{ .Release.Name }}-ui
               port:
                 number: {{ .Values.ui.port }}
+{{- if .Values.ingress.tls }}
+  tls:
+    - hosts:
+        - {{ .Values.ingress.tls.hostname }}
+      secretName: {{ .Values.ingress.tls.secret }}
+{{- end }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-buffering: "on"
+{{- if .Values.ingress.annotations }}
+{{ toYaml .Values.ingress.annotations | indent 4 }}
+{{- end }}
+{{- if .Values.ingress.labels }}
+  labels:
+{{ toYaml .Values.ingress.labels | indent 4 }}
+{{- end }}
+  name: {{ .Release.Name }}-nginx-ingress-ui-static
+spec:
+  rules:
+    - host: "{{ .Values.ingress.hostname }}"
+      http:
+        paths:
+        - path: /assets/(.*)
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ .Release.Name }}-ui
+              port:
+                number: {{ .Values.ui.port }}
+        - path: /favicon.png
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ .Release.Name }}-ui
+              port:
+                number: {{ .Values.ui.port }}
         - path: /version
           pathType: Prefix
           backend:
@@ -48,6 +87,7 @@ spec:
         - {{ .Values.ingress.tls.hostname }}
       secretName: {{ .Values.ingress.tls.secret }}
 {{- end }}
+
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -56,7 +96,7 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: /$1
 {{- if .Values.oidc.enabled }}
     nginx.ingress.kubernetes.io/auth-url: "https://$host/oauth2/auth"
-    nginx.ingress.kubernetes.io/auth-signin: "https://$host/start?rd=$escaped_request_uri"
+    nginx.ingress.kubernetes.io/auth-signin: "https://$host/oauth2/start?rd=$escaped_request_uri"
     nginx.ingress.kubernetes.io/proxy-buffering: "on"
     nginx.ingress.kubernetes.io/auth-response-headers: 'X-Auth-Request-Access-Token, Authorization'
 {{- end }}
@@ -312,7 +352,7 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-buffer-size: "256k"
 {{- if .Values.oidc.enabled }}
     nginx.ingress.kubernetes.io/auth-url: "https://$host/oauth2/auth"
-    nginx.ingress.kubernetes.io/auth-signin: "https://$host/start?rd=$escaped_request_uri"
+    nginx.ingress.kubernetes.io/auth-signin: "https://$host/oauth2/start?rd=$escaped_request_uri"
     nginx.ingress.kubernetes.io/proxy-buffering: "on"
     nginx.ingress.kubernetes.io/auth-response-headers: 'X-Auth-Request-Access-Token, X-Auth-Request-User'
 {{- end }}
@@ -321,13 +361,13 @@ spec:
     - host: {{ .Values.ingress.tls.hostname }}
       http:
         paths:
-        - path: /grafana/(.*)
+        - path: /grafana/?(.*)
           pathType: Prefix
           backend:
             service:
               name: {{ .Release.Name }}-grafana
               port:
-                number: {{ .Values.grafana.port}}
+                number: {{ .Values.grafana.service.port }}
   tls:
   - hosts:
     - {{ .Values.ingress.tls.hostname }}
