@@ -33,6 +33,7 @@ spec:
          - --request-logging=true
          - --skip-auth-preflight=true
          - --skip-jwt-bearer-tokens=true
+         - --whitelist-domain={{ .Values.oidc.host }}
         env:
          - name: OAUTH2_PROXY_OIDC_ISSUER_URL
            value: https://{{ .Values.oidc.host }}/auth/realms/{{ .Values.oidc.realm }}
