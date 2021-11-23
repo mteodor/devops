@@ -13,6 +13,7 @@ defaults:
   replicaCount: 3
   natsPort: 4222
   jaegerPort: 6831
+  email: ""
 
 ingress:
   enabled: true
@@ -201,8 +202,32 @@ influxdbjson:
 
 grafana:
   enabled: false
-  port: 3002
+  persistence:
+    enabled: true
+    size: 3Gi
+  service:
+    port: 3002
+  grafana.ini:
+    server:
+      domain: ""
+      root_url: '%(protocol)s://%(domain)s/grafana/'
+      serve_from_sub_path: true
+    security: 
+      disable_initial_admin_creation: false
+      cookie_secure: true
+    users:
+      auto_assign_org: true
+      auto_assign_org_role: Admin
+    auth:
+      disable_signout_menu: true
+      oauth_auto_login: false
+    auth.proxy:
+        enabled: true
+        header_name: X-Auth-Request-User
 
+
+
+      
 mongodb:
   enabled: false
   dbPort: 27017
