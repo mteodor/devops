@@ -10,6 +10,8 @@ metadata:
     nginx.ingress.kubernetes.io/auth-signin: "https://$host/oauth2/start?rd=$escaped_request_uri"
     nginx.ingress.kubernetes.io/proxy-buffering: "on"
     nginx.ingress.kubernetes.io/auth-response-headers: 'X-Auth-Request-Access-Token, Authorization'
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      add_header Cache-Control "no-cache,no-store";
 {{- end }}
 {{- if ne .Values.ingress.tls.secret "" }}
     cert-manager.io/cluster-issuer: {{ .Release.Name }}-letsencrypt
