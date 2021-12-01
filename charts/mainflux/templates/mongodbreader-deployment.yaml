@@ -41,6 +41,8 @@ spec:
               value: {{ .Release.Name }}-jaeger-operator-jaeger-agent:{{ .Values.defaults.jaegerPort }}
           image: "{{ default .Values.defaults.image.repository .Values.mongodb.reader.image.repository }}/mongodb-reader:{{ default .Values.defaults.image.tag .Values.mongodb.reader.image.tag }}"
           imagePullPolicy: {{ default .Values.defaults.image.pullPolicy .Values.mongodb.reader.image.pullPolicy }}
+          imagePullSecrets:
+            - name: regcred
           name: {{ .Release.Name }}-mongodb-reader
           ports:
             - containerPort: {{ .Values.mongodb.reader.httpPort }}
