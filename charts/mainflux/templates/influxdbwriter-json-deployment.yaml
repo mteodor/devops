@@ -55,6 +55,8 @@ spec:
               value: "{{ .Values.influxdbjson.contentType }}"
             - name: MF_INFLUX_WRITER_TRANSFORMER
               value: "{{ .Values.influxdbjson.transformer }}"
+            - name: MF_OIDC
+              value: "{{ .Values.oidc.enabled }}"              
           image: "{{ default .Values.defaults.image.repository .Values.influxdbjson.writer.image.repository }}/influxdb-writer:{{ default .Values.defaults.image.tag .Values.influxdbjson.writer.image.tag }}"
           imagePullPolicy: {{ default .Values.defaults.image.pullPolicy .Values.influxdbjson.writer.image.pullPolicy }}
           name: {{ .Release.Name }}-influxdb-json-writer

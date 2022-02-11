@@ -39,6 +39,8 @@ spec:
               value: "{{ .Values.influxdb.dbPort }}"
             - name: MF_JAEGER_URL
               value: {{ .Release.Name }}-jaeger-operator-jaeger-agent:{{ .Values.defaults.jaegerPort }}
+            - name: MF_OIDC
+              value: "{{ .Values.oidc.enabled }}"
           image: "{{ default .Values.defaults.image.repository .Values.influxdb.reader.image.repository }}/influxdb-reader:{{ default .Values.defaults.image.tag .Values.influxdb.reader.image.tag }}"
           imagePullPolicy: {{ default .Values.defaults.image.pullPolicy .Values.influxdb.reader.image.pullPolicy }}
           name: {{ .Release.Name }}-influxdb-reader

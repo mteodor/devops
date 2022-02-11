@@ -49,6 +49,8 @@ spec:
               value: {{ .Release.Name }}-envoy:{{ .Values.auth.grpcPort }}
             - name: MF_SDK_BASE_URL
               value: http://{{ .Release.Name }}-things:{{ .Values.things.httpPort }}
+            - name: MF_OIDC
+              value: "{{ .Values.oidc.enabled }}"
           image: "{{ default .Values.defaults.image.repository .Values.bootstrap.image.repository }}/bootstrap:{{ default .Values.defaults.image.tag .Values.bootstrap.image.tag }}"
           imagePullPolicy: {{ default .Values.defaults.image.pullPolicy .Values.bootstrap.image.pullPolicy }}
           name: {{ .Release.Name }}-bootstrap

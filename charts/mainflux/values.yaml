@@ -225,9 +225,6 @@ grafana:
         enabled: true
         header_name: X-Auth-Request-User
 
-
-
-      
 mongodb:
   enabled: false
   dbPort: 27017
@@ -387,7 +384,7 @@ redis-oauth2:
 
 jaeger-operator:
   jaeger:
-    create: true
+    create: false
   rbac:
     pspEnabled: true
     clusterRole: true
