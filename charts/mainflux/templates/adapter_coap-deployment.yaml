@@ -27,13 +27,9 @@ spec:
             - name: MF_COAP_ADAPTER_LOG_LEVEL
               value: {{ default .Values.defaults.logLevel .Values.adapter_coap.logLevel }}
             - name: MF_COAP_ADAPTER_PORT
-<<<<<<< HEAD
               value: "{{ .Values.adapter_coap.port }}"
-=======
-              value: "{{ .Values.adapter_coap.udpPort }}"
             - name: MF_OIDC
               value: "{{ .Values.oidc.enabled }}"
->>>>>>> e357134 (oauth2 installed on DO, on 11. Feb 20222)
           image: "{{ default .Values.defaults.image.repository .Values.adapter_coap.image.repository }}/coap:{{ default .Values.defaults.image.tag .Values.adapter_coap.image.tag }}"
           imagePullPolicy: {{ default .Values.defaults.image.pullPolicy .Values.adapter_coap.image.pullPolicy }}
           name: {{ .Release.Name }}-adapter-coap
