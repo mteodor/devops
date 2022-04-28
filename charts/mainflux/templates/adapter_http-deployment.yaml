@@ -28,6 +28,8 @@ spec:
               value: nats://{{ .Release.Name }}-nats-client:{{ .Values.defaults.natsPort }}
             - name: MF_THINGS_AUTH_GRPC_URL
               value: {{ .Release.Name }}-envoy:{{ .Values.things.authGrpcPort }}
+            - name: MF_OIDC
+              value: "{{ .Values.oidc.enabled }}"
           image: "{{ default .Values.defaults.image.repository .Values.adapter_http.image.repository }}/http:{{ default .Values.defaults.image.tag .Values.adapter_http.image.tag }}"
           imagePullPolicy: {{ default .Values.defaults.image.pullPolicy .Values.adapter_http.image.pullPolicy }}
           name: {{ .Release.Name }}-adapter-http

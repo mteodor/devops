@@ -60,23 +60,25 @@ spec:
             - name: MF_SDK_BASE_URL
               value: http://{{ .Release.Name }}-things:{{ .Values.things.httpPort }}
             - name: MF_SDK_THINGS_PREFIX
-              value: {{ index .Values "certs" "sdkThingsPrefix" }}
+              value: "{{ .Values.certs.sdkThingsPrefix }}"
             - name: MF_CERTS_SIGN_CA_PATH
-              value: {{ index .Values "certs" "signCAPath" }}
+              value: "{{ .Values.certs.signCAPath }}"
             - name: MF_CERTS_SIGN_CA_KEY_PATH
-              value: {{ index .Values "certs" "signCAKeyPath" }}
+              value: "{{ .Values.certs.signCAKeyPath }}"
             - name: MF_CERTS_SIGN_HOURS_VALID
-              value: {{ index .Values "certs" "signHoursValid" }}
+              value: "{{ .Values.certs.signHoursValid }}"
             - name: MF_CERTS_SIGN_RSA_BITS
               value: "{{ .Values.certs.signRSABits }}"
             - name: MF_CERTS_VAULT_TOKEN
-              value: {{ index .Values "certs" "signVaultToken" }}
+              value: "{{ .Values.certs.signVaultToken }}"
             - name: MF_CERTS_VAULT_HOST
-              value: {{ index .Values "certs" "signVaultHost" }}
+              value: "{{ .Values.certs.signVaultHost }}"
             - name: MF_CERTS_VAULT_PKI_PATH
-              value: {{ index .Values "certs" "signVaultPKIPath" }}
+              value: "{{ .Values.certs.signVaultPKIPath }}"
             - name: MF_CERTS_VAULT_ROLE
-              value: {{ index .Values "certs" "signVaultRole" }}
+              value: "{{ .Values.certs.signVaultRole}}"
+            - name: MF_OIDC
+              value: "{{ .Values.oidc.enabled }}"
           image: "{{ default .Values.defaults.image.repository .Values.certs.image.repository }}/certs:{{ default .Values.defaults.image.tag .Values.certs.image.tag }}"
           imagePullPolicy: {{ default .Values.defaults.image.pullPolicy .Values.certs.image.pullPolicy }}
           name: {{ .Release.Name }}-certs

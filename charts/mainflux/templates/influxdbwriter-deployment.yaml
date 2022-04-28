@@ -1,6 +1,5 @@
 # Copyright (c) Mainflux
 # SPDX-License-Identifier: Apache-2.0
-
 {{- if .Values.influxdb.enabled }}
 apiVersion: v1
 kind: ConfigMap
@@ -56,6 +55,8 @@ spec:
               value: "{{ .Values.influxdb.contentType }}"
             - name: MF_INFLUX_WRITER_TRANSFORMER
               value: "{{ .Values.influxdb.transformer }}"
+            - name: MF_OIDC
+              value: "{{ .Values.oidc.enabled }}"
           image: "{{ default .Values.defaults.image.repository .Values.influxdb.writer.image.repository }}/influxdb-writer:{{ default .Values.defaults.image.tag .Values.influxdb.writer.image.tag }}"
           imagePullPolicy: {{ default .Values.defaults.image.pullPolicy .Values.influxdb.writer.image.pullPolicy }}
           name: {{ .Release.Name }}-influxdb-writer
@@ -81,3 +82,4 @@ spec:
             optional: false
           name: influxdb-writer-config
 {{- end }}
+

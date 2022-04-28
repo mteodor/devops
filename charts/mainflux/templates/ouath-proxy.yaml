@@ -1,0 +1,87 @@
+{{- if .Values.oidc.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    k8s-app: {{ .Release.Name }}-oauth2-proxy
+  name: {{ .Release.Name }}-oauth2-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: {{ .Release.Name }}-oauth2-proxy
+  template:
+    metadata:
+      labels:
+        k8s-app: {{ .Release.Name }}-oauth2-proxy
+    spec:
+      containers:
+      - args:
+         - --provider=oidc
+         - --email-domain=*
+         - --upstream=file:///dev/null
+         - --http-address=0.0.0.0:4180
+         - --pass-authorization-header=true
+         - --pass-access-token=true
+         - --set-xauthrequest=true
+         - --set-authorization-header=true
+         - --pass-authorization-header=true
+         - --cookie-expire=24h01m0s 
+         - --cookie-refresh=0h0m5s
+         - --standard-logging=true
+         - --auth-logging=true
+         - --request-logging=true
+         - --skip-auth-preflight=true
+         - --skip-jwt-bearer-tokens=true
+         - --whitelist-domain={{ .Values.oidc.host }}
+        env:
+         - name: OAUTH2_PROXY_OIDC_ISSUER_URL
+           value: https://{{ .Values.oidc.host }}/auth/realms/{{ .Values.oidc.realm }}
+         - name: OAUTH2_PROXY_CLIENT_ID
+           value: {{ .Values.oidc.client_id }}
+         - name: OAUTH2_PROXY_CLIENT_SECRET
+           value: {{ .Values.oidc.client_secret }}
+         # docker run -ti --rm python:3-alpine python -c 'import secrets,base64; print(base64.b64encode(base64.b64encode(secrets.token_bytes(16))));'
+         - name: OAUTH2_PROXY_COOKIE_SECRET
+           value: {{ .Values.oidc.cookie_secret }}
+         - name: OUATH2_PROXY_LOGIN_URL
+           value: https://{{ .Values.oidc.host }}/auth/realms/{{ .Values.oidc.realm }}/protocol/openid-connect/auth
+         - name: OAUTH2_PROXY_REDEEM_URL
+           value: https://{{ .Values.oidc.host }}/auth/realms/{{ .Values.oidc.realm }}/protocol/openid-connect/token
+         - name: OAUTH2_PROXY_PROFILE_URL
+           value: https://{{ .Values.oidc.host }}/auth/realms/{{ .Values.oidc.realm }}/protocol/openid-connect/userinfo
+         - name: OAUTH2_PROXY_VALIDATE_URL
+           value: https://{{ .Values.oidc.host }}/auth/realms/{{ .Values.oidc.realm }}/protocol/openid-connect/userinfo
+         - name: OAUTH2_PROXY_SESSION_STORE_TYPE
+           value: redis
+         - name: OAUTH2_PROXY_REDIS_PASSWORD
+           valueFrom:
+             secretKeyRef:
+              name: {{ .Release.Name }}-redis-oauth2
+              key: redis-password
+         - name: OAUTH2_PROXY_REDIS_CONNECTION_URL
+           value: 'redis://{{ .Release.Name }}-redis-oauth2-master:6379'
+        image: quay.io/oauth2-proxy/oauth2-proxy:v7.2.1
+        imagePullPolicy: Always
+        name: {{ .Release.Name }}-oauth2-proxy
+        ports:
+        - containerPort: 4180
+          protocol: TCP
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    k8s-app: {{ .Release.Name }}-oauth2-proxy
+  name: {{ .Release.Name }}-oauth2-proxy
+spec:
+  ports:
+  - name: http
+    port: 4180
+    protocol: TCP
+    targetPort: 4180
+  selector:
+    k8s-app: {{ .Release.Name }}-oauth2-proxy
+{{- end }}

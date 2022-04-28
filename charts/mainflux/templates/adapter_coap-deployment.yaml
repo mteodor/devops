@@ -28,6 +28,8 @@ spec:
               value: {{ default .Values.defaults.logLevel .Values.adapter_coap.logLevel }}
             - name: MF_COAP_ADAPTER_PORT
               value: "{{ .Values.adapter_coap.port }}"
+            - name: MF_OIDC
+              value: "{{ .Values.oidc.enabled }}"
           image: "{{ default .Values.defaults.image.repository .Values.adapter_coap.image.repository }}/coap:{{ default .Values.defaults.image.tag .Values.adapter_coap.image.tag }}"
           imagePullPolicy: {{ default .Values.defaults.image.pullPolicy .Values.adapter_coap.image.pullPolicy }}
           name: {{ .Release.Name }}-adapter-coap

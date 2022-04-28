@@ -1,0 +1,114 @@
+{{- if .Values.oidc.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-nginx-tokens
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+      component: nginx-tokens
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+        component: nginx-tokens
+    spec:
+      containers:
+        - image: "{{ .Values.nginx_internal.image.repository }}:{{ .Values.nginx_internal.image.tag }}"
+        # - image: busybox
+        #   command: ["sleep", "3600"]
+          imagePullPolicy: {{ default .Values.defaults.image.pullPolicy .Values.nginx_internal.image.imagePullPolicy}}
+          name: {{ .Release.Name }}-nginx-tokens
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /etc/nginx/nginx.conf
+              name: nginx-tokens-config
+              subPath: nginx.conf
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      shareProcessNamespace: true
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: nginx-tokens-config
+          configMap:
+            defaultMode: 256
+            name: {{ .Release.Name }}-nginx-tokens-config
+            optional: false
+---
+apiVersion: v1
+data:
+  nginx.conf: |-
+    user nginx;
+    worker_processes auto;
+    pid /run/nginx.pid;
+    load_module /etc/nginx/modules/ngx_stream_js_module.so;
+    load_module /etc/nginx/modules/ngx_http_js_module.so;
+    include /etc/nginx/modules-enabled/*.conf;
+
+    events {
+      worker_connections 768;
+    }
+
+    http {
+      sendfile on;
+      tcp_nopush on;
+      tcp_nodelay on;
+      keepalive_timeout 65;
+      types_hash_max_size 2048;
+
+      include /etc/nginx/mime.types;
+      default_type application/octet-stream;
+
+      ssl_protocols TLSv1.2 TLSv1.3;
+      ssl_prefer_server_ciphers on;
+
+
+      server {
+        listen 8080 default_server;
+        listen [::]:8080 default_server;
+
+        
+        server_name {{ .Values.ingress.hostname }};
+        
+        location  = /users/profile {
+           proxy_pass http://mainflux-oauth2-proxy:4180/oauth2/userinfo;
+        }
+
+        
+        location ~ ^/(tokens) {
+          default_type application/json;
+          return 200 '{"token":"$http_authorization"}';
+        }
+      }
+
+      log_format access_log_format 'HTTP '
+        '$remote_addr: '
+        '"$request" $status; '
+        '"authorization":$http_authorization '
+        '"user": $http_ '
+        'request time=$request_time upstream connect time=$upstream_connect_time upstream response time=$upstream_response_time';
+      access_log /var/log/nginx/access.log access_log_format;
+      error_log  /var/log/nginx/error.log debug;
+
+    }
+
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-nginx-tokens-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-nginx-tokens
+spec:
+  selector:
+    app: {{ .Release.Name }}
+    component: nginx-tokens
+  ports:
+    - port: 8080
+      protocol: TCP
+      name: http
+{{- end }}

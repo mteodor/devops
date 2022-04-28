@@ -46,11 +46,13 @@ spec:
             - name: MF_KETO_WRITE_REMOTE_HOST
               value: {{ .Release.Name }}-keto-write
             - name: MF_KETO_READ_REMOTE_HOST
-              value: {{ .Release.Name }}-keto-read              
+              value: {{ .Release.Name }}-keto-read
             - name: MF_KETO_READ_REMOTE_PORT
               value: "{{ .Values.keto.service.read.port }}"
             - name: MF_KETO_WRITE_REMOTE_PORT
-              value: "{{ .Values.keto.service.write.port }}"            
+              value: "{{ .Values.keto.service.write.port }}"
+            - name: MF_OIDC
+              value: "{{ .Values.oidc.enabled }}"
           image: "{{ default .Values.defaults.image.repository .Values.auth.image.repository }}/auth:{{ default .Values.defaults.image.tag .Values.auth.image.tag }}"
           imagePullPolicy: {{ default .Values.defaults.image.pullPolicy .Values.users.image.pullPolicy }}
           name: {{ .Release.Name }}-auth

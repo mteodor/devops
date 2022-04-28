@@ -61,6 +61,8 @@ spec:
               value: "{{ .Values.users.adminEmail }}"
             - name: MF_USERS_ADMIN_PASSWORD
               value: "{{ .Values.users.adminPassword }}"
+            - name: MF_OIDC
+              value: "{{ .Values.oidc.enabled }}"
           image: "{{ default .Values.defaults.image.repository .Values.users.image.repository }}/users:{{ default .Values.defaults.image.tag .Values.users.image.tag }}"
           imagePullPolicy: {{ default .Values.defaults.image.pullPolicy .Values.users.image.pullPolicy }}
           name: {{ .Release.Name }}-users

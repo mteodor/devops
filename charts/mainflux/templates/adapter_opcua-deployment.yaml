@@ -39,6 +39,8 @@ spec:
               value: {{ .Release.Name }}-redis-streams-master:{{ .Values.things.redisESPort }}
             - name: MF_OPCUA_ADAPTER_EVENT_CONSUMER
               value: {{ .Values.adapter_opcua.eventConsumer }}
+            - name: MF_OIDC
+              value: "{{ .Values.oidc.enabled }}"
           image: "{{ default .Values.defaults.image.repository .Values.adapter_opcua.image.repository }}/opcua:{{ default .Values.defaults.image.tag .Values.adapter_opcua.image.tag }}"
           imagePullPolicy: {{ default .Values.defaults.image.pullPolicy .Values.adapter_opcua.image.pullPolicy }}
           name: {{ .Release.Name }}-adapter-opcua

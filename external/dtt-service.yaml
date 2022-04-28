@@ -1,0 +1,8 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: dtt-service
+  namespace: mf
+spec:
+  type: ExternalName
+  externalName: ashvin-integration.digitaltwin.technology

@@ -1,0 +1,7 @@
+  
+extraVolumes:
+  - name: ashvin-theme
+
+extraVolumeMounts:
+  - name: ashvin-theme
+    mountPath: /opt/bitnami/keycloak/themes/ashvin

@@ -37,6 +37,8 @@ spec:
               value: {{ .Release.Name }}-envoy:{{ .Values.auth.grpcPort }}
             - name: MF_TWINS_CACHE_URL
               value: {{ .Release.Name }}-redis-streams-master:{{ .Values.twins.redisCachePort }}
+            - name: MF_OIDC
+              value: "{{ .Values.oidc.enabled }}"
           image: "{{ default .Values.defaults.image.repository .Values.twins.image.repository }}/twins:{{ default .Values.defaults.image.tag .Values.twins.image.tag }}"
           imagePullPolicy: {{ default .Values.defaults.image.pullPolicy .Values.twins.image.pullPolicy }}
           name: {{ .Release.Name }}-twins
