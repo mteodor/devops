@@ -30,13 +30,13 @@ spec:
     - host: "{{ .Values.ingress.hostname }}"
       http:
         paths:
-        - path: /
-          pathType: Prefix
-          backend:
-            service:
-              name: {{ .Release.Name }}-ui
-              port:
-                number: {{ .Values.ui.port }}
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Release.Name }}-ui
+                port:
+                  number: {{ .Values.ui.port }}
 {{- if .Values.ingress.tls }}
   tls:
     - hosts:
@@ -63,27 +63,27 @@ spec:
     - host: "{{ .Values.ingress.hostname }}"
       http:
         paths:
-        - path: /assets/(.*)
-          pathType: Prefix
-          backend:
-            service:
-              name: {{ .Release.Name }}-ui
-              port:
-                number: {{ .Values.ui.port }}
-        - path: /favicon.png
-          pathType: Prefix
-          backend:
-            service:
-              name: {{ .Release.Name }}-ui
-              port:
-                number: {{ .Values.ui.port }}
-        - path: /version
-          pathType: Prefix
-          backend:
-            service:
-              name: {{ .Release.Name }}-things
-              port:
-                number: {{ .Values.things.httpPort }}
+          - path: /assets/(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Release.Name }}-ui
+                port:
+                  number: {{ .Values.ui.port }}
+          - path: /favicon.png
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Release.Name }}-ui
+                port:
+                  number: {{ .Values.ui.port }}
+          - path: /version
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Release.Name }}-things
+                port:
+                  number: {{ .Values.things.httpPort }}
 {{- if .Values.ingress.tls }}
   tls:
     - hosts:
@@ -222,13 +222,13 @@ spec:
                   number: {{ .Values.twins.httpPort }}
 {{- end }}
 {{- if .Values.adapter_opcua.enabled }}
-          - path: /(browse.*)
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ .Release.Name }}-adapter-opcua
-                port:
-                  number: {{ default .Values.adapter_opcua.httpPort }}
+        - path: /(browse.*)
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ .Release.Name }}-adapter-opcua
+              port:
+                number: {{ default .Values.adapter_opcua.httpPort }}
 {{- end }}
 {{- if .Values.ingress.tls }}
   tls:
@@ -333,13 +333,13 @@ spec:
     - host: {{ .Values.ingress.tls.hostname }}
       http:
         paths:
-        - path: /oauth2
-          pathType: Prefix
-          backend:
-            service:
-              name: {{ .Release.Name }}-oauth2-proxy
-              port:
-                number: 4180
+          - path: /oauth2
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Release.Name }}-oauth2-proxy
+                port:
+                  number: 4180
   tls:
   - hosts:
     - {{ .Values.ingress.tls.hostname }}
